@@ -1,0 +1,60 @@
+---
+name: Plan Rules changes
+
+# Runs on every PR (no `paths:` filter on the trigger) so the required check
+# "Run octorules plan" always reports a status. dorny/paths-filter inside the
+# job decides whether any rules/ files changed; the heavy steps are gated on
+# that, so DNS-only PRs complete as a no-op success instead of being blocked.
+
+on:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+  pull-requests: write  # add_pr_comment posts the plan diff
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+  octorules-plan:
+    name: Run octorules plan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706  # v4.0.2
+        id: filter
+        with:
+          # 'every' = a file counts only if it matches ALL patterns (inside
+          # rules/ AND not README AND not docs).
+          predicate-quantifier: 'every'
+          filters: |
+            rules:
+              - 'waf/**'
+              - '!waf/README.md'
+              - '!rules/docs/**'
+
+      - name: No-op when no rules/ changes
+        if: steps.filter.outputs.rules != 'true'
+        run: echo "No rules/ changes — required check satisfied as no-op."
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: steps.filter.outputs.rules == 'true'
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - run: pip install -r requirements.txt
+        if: steps.filter.outputs.rules == 'true'
+
+      - uses: doctena-org/octorules-sync@a278ab9ed29451d7560c9caa9b26d0bf9f8cb9e9  # v1.8.6
+        if: steps.filter.outputs.rules == 'true'
+        with:
+          config_path: octorules.yaml
+          force: 'Yes'
+          lint: 'Yes'
+          audit: 'Yes'
+          add_pr_comment: 'Yes'
+          pr_comment_token: ${{ secrets.GITHUB_TOKEN }}

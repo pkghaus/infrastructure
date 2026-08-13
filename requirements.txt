@@ -1,0 +1,4 @@
+octodns==1.21.1
+octodns-cloudflare==1.2.0
+octorules
+octorules-cloudflare

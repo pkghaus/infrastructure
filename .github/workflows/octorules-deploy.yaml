@@ -1,0 +1,36 @@
+name: Deploy Rules changes
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'waf/**'
+      - '!waf/README.md'
+      - '!rules/docs/**'
+
+permissions:
+  contents: read
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+  deploy:
+    name: Publish Rules config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+      - name: Publish to providers
+        uses: doctena-org/octorules-sync@a278ab9ed29451d7560c9caa9b26d0bf9f8cb9e9  # v1.8.6
+        with:
+          config_path: octorules.yaml
+          doit: --doit
+          force: 'Yes'
+          lint: 'Yes'
+          audit: 'Yes'

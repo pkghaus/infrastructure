@@ -1,0 +1,6 @@
+---
+cloudflare:
+  zone_security:
+    security_level: medium
+    challenge_passage: 1800
+    browser_integrity_check: 'on'

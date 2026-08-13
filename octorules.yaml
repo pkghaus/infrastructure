@@ -1,0 +1,22 @@
+---
+manager:
+  max_workers: 8
+  lint:
+    sets: [default, strict]
+  plan_outputs:
+    text:
+      class: octorules.plan_output.PlanText
+    html:
+      class: octorules.plan_output.PlanHtml
+      path: octorules-plan.html
+
+providers:
+  cloudflare:
+    token: env/CLOUDFLARE_API_TOKEN
+  rules:
+    directory: ./waf
+
+zones:
+  pkg.haus:
+    sources:
+      - rules

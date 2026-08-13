@@ -1,0 +1,33 @@
+---
+manager:
+  max_workers: 8
+  validators:
+    # Strictest validation: zone validators (octodns 1.18+) included.
+    # These become the default in octodns 2.0.
+    enabled: [legacy, strict, best-practice]
+  plan_outputs:
+    html:
+      class: octodns.provider.plan.PlanHtml
+
+providers:
+
+  zones:
+    class: octodns.provider.yaml.YamlProvider
+    directory: ./dns
+    # default Cloudflare TTL is 300, keep it that way
+    default_ttl: 300
+    enforce_order: false
+
+  cloudflare:
+    class: octodns_cloudflare.CloudflareProvider
+    token: env/CLOUDFLARE_API_TOKEN
+    cdn: false
+    pagerules: false
+
+zones:
+
+  pkg.haus.:
+    sources:
+      - zones
+    targets:
+      - cloudflare
