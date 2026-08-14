@@ -53,16 +53,18 @@
     - flags: 0
       tag: issuewild
       value: ssl.com
-  # The apex website: GitHub Pages behind the custom domain, same shape as
-  # apt below. DNS-only until the Pages custom-domain check passes.
-  - octodns: *AUTOTTL_ONLY
+  # The apex website: GitHub Pages behind the Cloudflare proxy.
+  - octodns: &PROXIED_AND_AUTOTTL
+      cloudflare:
+        proxied: true
+        auto-ttl: true
     type: A
     values:
       - 185.199.108.153
       - 185.199.109.153
       - 185.199.110.153
       - 185.199.111.153
-  - octodns: *AUTOTTL_ONLY
+  - octodns: *PROXIED_AND_AUTOTTL
     type: AAAA
     values:
       - 2606:50c0:8000::153
@@ -70,13 +72,9 @@
       - 2606:50c0:8002::153
       - 2606:50c0:8003::153
 
-# The APT archive: GitHub Pages behind a custom domain. DNS-only until the
-# Pages custom-domain check passes; the Cloudflare proxy may be enabled after.
+# The APT archive: GitHub Pages behind the Cloudflare proxy.
 apt:
-  octodns:
-    cloudflare:
-      auto-ttl: true
-      comment: pkg.haus APT archive -> GitHub Pages
+  octodns: *PROXIED_AND_AUTOTTL
   type: CNAME
   value: pkghaus.github.io.
 
@@ -89,9 +87,6 @@ cf2024-1._domainkey:
 
 # No legitimate mail originates from this domain: reject all spoofing.
 _dmarc:
-  octodns:
-    cloudflare:
-      auto-ttl: true
-      comment: no legitimate outbound exists; reject all spoofing (revisit if send-as is ever added)
+  octodns: *AUTOTTL_ONLY
   type: TXT
   value: v=DMARC1\; p=reject\; sp=reject
