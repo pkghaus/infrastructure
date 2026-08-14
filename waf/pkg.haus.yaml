@@ -4,3 +4,52 @@ cloudflare:
     security_level: medium
     challenge_passage: 1800
     browser_integrity_check: 'on'
+  cache_rules:
+  - ref: apt-pool-debs-immutable
+    description: Pool .debs are immutable by archive invariant (reprepro
+      refuses different bytes under an existing version), so cache them hard
+      at the edge. Scoped to .deb files only - the listing pages in pool/
+      change when packages land. 4xx/5xx pinned to no-store so a transient
+      origin error cannot be cached across POPs.
+    action_parameters:
+      cache: true
+      edge_ttl:
+        mode: override_origin
+        default: 2592000
+        status_code_ttl:
+        - status_code_range:
+            from: 400
+            to: 599
+          value: -1
+      browser_ttl:
+        mode: respect_origin
+    expression: |-
+      (http.host eq "apt.pkg.haus")
+      and (starts_with(http.request.uri.path, "/pool/"))
+      and (ends_with(http.request.uri.path, ".deb"))
+  - ref: apt-metadata-fresh
+    description: dists/ metadata and the keyring mutate under stable URLs; a
+      mismatched cached set breaks apt update hash checks. Never edge-cache.
+    action_parameters:
+      cache: false
+    expression: |-
+      (http.host eq "apt.pkg.haus")
+      and ((starts_with(http.request.uri.path, "/dists/"))
+        or (http.request.uri.path eq "/pkghaus-archive-keyring.gpg"))
+
+  waf_custom_rules:
+  - ref: apt-never-challenge
+    description: APT is not a browser - any challenge breaks every apt update
+      silently. Skip the browser-oriented zone features for the archive host,
+      as insurance against future zone-security tightening.
+    action: skip
+    action_parameters:
+      products:
+      - securityLevel
+      - bic
+      - hot
+      - uaBlock
+    logging:
+      enabled: true
+    expression: |-
+      (http.host eq "apt.pkg.haus")
