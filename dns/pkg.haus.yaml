@@ -90,3 +90,10 @@ _dmarc:
   octodns: *AUTOTTL_ONLY
   type: TXT
   value: v=DMARC1\; p=reject\; sp=reject
+
+# www redirects to the apex (redirect rule in waf/pkg.haus.yaml); the record
+# only exists so the proxy can answer for the hostname.
+www:
+  octodns: *PROXIED_AND_AUTOTTL
+  type: CNAME
+  value: pkg.haus.
