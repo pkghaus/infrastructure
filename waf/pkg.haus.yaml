@@ -104,8 +104,9 @@ cloudflare:
       non-HTML (apt clients ignore unknown headers); matches what the stats
       worker already sends, and "set" overwrites so nothing duplicates. The
       CSP ceiling is unsafe-inline because the static pages carry inline
-      styles and the Plausible/copy/time scripts.
-    expression: 'true'
+      styles and the Plausible/copy/time scripts. Hosts are enumerated so
+      a future subdomain opts in deliberately instead of inheriting.
+    expression: http.host in {"pkg.haus" "apt.pkg.haus" "www.pkg.haus"}
     action_parameters:
       headers:
         Content-Security-Policy:
