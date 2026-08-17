@@ -5,6 +5,12 @@ manager:
     # Strictest validation: zone validators (octodns 1.18+) included.
     # These become the default in octodns 2.0.
     enabled: [legacy, strict, best-practice]
+    zone:
+      # Purelymail publishes one MX host and a _dmarc CNAME to its own
+      # managed policy; the mail validator wants two MX values and a
+      # DMARC TXT in-zone, neither of which it can satisfy. The other
+      # fourteen zone validators stay on, including cname-coexistence.
+      disable_validators: [mail]
   plan_outputs:
     html:
       class: octodns.provider.plan.PlanHtml

@@ -7,15 +7,11 @@
   # Purelymail sends as well as receives, so SPF and DKIM below are real
   # authentication, not placeholders.
   #
-  # lenient because octodns wants two MX values for redundancy and
-  # Purelymail publishes one host. There is no honest second value:
-  # mailserver.purelymail.com. has a single A record, no secondary
-  # hostname resolves, and Purelymail's own domain uses exactly one MX.
-  # A fabricated backup would just send retries into a black hole.
-  # Scoped to this record - the anchor below deliberately does not carry
-  # it.
-  - octodns:
-      lenient: true
+  # One MX host is all Purelymail publishes: mailserver.purelymail.com.
+  # has a single A record, no secondary hostname resolves, and their own
+  # domain uses exactly one MX. A fabricated backup would send retries
+  # into a black hole.
+  - octodns: &AUTOTTL_ONLY
       cloudflare:
         auto-ttl: true
     type: MX
@@ -24,9 +20,7 @@
         preference: 10
   # Both apex TXT values live in one record: octodns owns a single
   # (name, type) pair, so a second TXT entry here would collide.
-  - octodns: &AUTOTTL_ONLY
-      cloudflare:
-        auto-ttl: true
+  - octodns: *AUTOTTL_ONLY
     type: TXT
     values:
       - v=spf1 include:_spf.purelymail.com ~all
