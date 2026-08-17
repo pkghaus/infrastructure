@@ -110,16 +110,15 @@ purelymail3._domainkey:
   type: CNAME
   value: key3.dkimroot.purelymail.com.
 
-# Kept as our own TXT, NOT the _dmarc CNAME Purelymail suggests. A CNAME
-# cannot coexist with a TXT at the same name, and pointing _dmarc at
-# dmarcroot.purelymail.com. hands the policy (and the rua reports) to
-# them. p=reject stays correct now that mail can legitimately originate
-# here: SPF and DKIM above authenticate it, and reject applies only to
-# what fails both.
+# Purelymail's managed policy, which resolves to
+# "v=DMARC1; p=reject; ruf=mailto:dmarc@purelymail.com" - the same
+# p=reject we published ourselves, plus forensic reports to them so they
+# can flag spoofing campaigns. sp is absent because subdomains inherit p.
+# Unproxied: a proxied CNAME would answer with Cloudflare addresses.
 _dmarc:
   octodns: *AUTOTTL_ONLY
-  type: TXT
-  value: v=DMARC1\; p=reject\; sp=reject
+  type: CNAME
+  value: dmarcroot.purelymail.com.
 
 # www redirects to the apex (redirect rule in waf/pkg.haus.yaml); the record
 # only exists so the proxy can answer for the hostname.
