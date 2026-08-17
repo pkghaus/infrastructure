@@ -1,22 +1,25 @@
 ---
 '':
-  # Cloudflare Email Routing's own records: MX + SPF. ER is inbound-only
-  # forwarding; outbound as @pkg.haus does not exist, hence the DMARC reject
-  # below. If send-as is ever added, revisit _dmarc and add real SPF/DKIM.
+  # Purelymail hosts pkg.haus mail (account pkghaus@purelymail.com),
+  # replacing Cloudflare Email Routing. ER was inbound-only forwarding and
+  # was configured by hand, so it would not have survived the Cloudflare
+  # account move; these records are codified and redeploy themselves.
+  # Purelymail sends as well as receives, so SPF and DKIM below are real
+  # authentication, not placeholders.
   - octodns: &AUTOTTL_ONLY
       cloudflare:
         auto-ttl: true
     type: MX
     values:
-      - exchange: route1.mx.cloudflare.net.
-        preference: 90
-      - exchange: route2.mx.cloudflare.net.
-        preference: 91
-      - exchange: route3.mx.cloudflare.net.
-        preference: 94
+      - exchange: mailserver.purelymail.com.
+        preference: 10
+  # Both apex TXT values live in one record: octodns owns a single
+  # (name, type) pair, so a second TXT entry here would collide.
   - octodns: *AUTOTTL_ONLY
     type: TXT
-    value: v=spf1 include:_spf.mx.cloudflare.net ~all
+    values:
+      - v=spf1 include:_spf.purelymail.com ~all
+      - purelymail_ownership_proof=8fccbabc817815644f728d4d174a47a63104dd0fc15db9be79504b6868f06c98c852ee939a6b6116eaa83c8e9666aa95e6083fb206aaf7a8fc1eca9416c37bbf
   # Pin certificate issuance to the CAs GitHub Pages provisions through, plus
   # Cloudflare-compatible issuers -- the same curated set as simon.tf, which
   # fronts Pages the same way.
@@ -78,14 +81,30 @@ apt:
   type: CNAME
   value: pkghaus.github.io.
 
-# Email Routing's DKIM key (created by ER; declared here so octodns owns the
-# complete zone).
-cf2024-1._domainkey:
+# Purelymail's DKIM keys. CNAMEs, so key rotation happens on their side
+# without a zone change. Deliberately NOT proxied: a proxied CNAME would
+# answer with Cloudflare addresses and break the DKIM lookup.
+purelymail1._domainkey:
   octodns: *AUTOTTL_ONLY
-  type: TXT
-  value: v=DKIM1\; h=sha256\; k=rsa\; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiweykoi+o48IOGuP7GR3X0MOExCUDY/BCRHoWBnh3rChl7WhdyCxW3jgq1daEjPPqoi7sJvdg5hEQVsgVRQP4DcnQDVjGMbASQtrY4WmB1VebF+RPJB2ECPsEDTpeiI5ZyUAwJaVX7r6bznU67g7LvFq35yIo4sdlmtZGV+i0H4cpYH9+3JJ78km4KXwaf9xUJCWF6nxeD+qG6Fyruw1Qlbds2r85U9dkNDVAS3gioCvELryh1TxKGiVTkg4wqHTyHfWsp7KD3WQHYJn0RyfJJu6YEmL77zonn7p2SRMvTMP3ZEXibnC9gz3nnhR6wcYL8Q7zXypKTMD58bTixDSJwIDAQAB
+  type: CNAME
+  value: key1.dkimroot.purelymail.com.
 
-# No legitimate mail originates from this domain: reject all spoofing.
+purelymail2._domainkey:
+  octodns: *AUTOTTL_ONLY
+  type: CNAME
+  value: key2.dkimroot.purelymail.com.
+
+purelymail3._domainkey:
+  octodns: *AUTOTTL_ONLY
+  type: CNAME
+  value: key3.dkimroot.purelymail.com.
+
+# Kept as our own TXT, NOT the _dmarc CNAME Purelymail suggests. A CNAME
+# cannot coexist with a TXT at the same name, and pointing _dmarc at
+# dmarcroot.purelymail.com. hands the policy (and the rua reports) to
+# them. p=reject stays correct now that mail can legitimately originate
+# here: SPF and DKIM above authenticate it, and reject applies only to
+# what fails both.
 _dmarc:
   octodns: *AUTOTTL_ONLY
   type: TXT
