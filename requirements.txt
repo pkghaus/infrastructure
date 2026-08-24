@@ -1,4 +1,4 @@
-octodns==1.21.1
+octodns==1.22.0
 octodns-cloudflare==1.2.0
 octorules
 octorules-cloudflare
