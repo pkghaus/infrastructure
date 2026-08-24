@@ -1,0 +1,23 @@
+version: 2
+
+updates:
+  # Third-party actions are pinned to commit SHAs, which is what keeps a moved
+  # tag from changing what runs here - and also what stops them ever updating
+  # on their own. Eight of them deploy DNS and WAF for the zone, so a stale
+  # pin is a stale deploy path.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
+
+  # octodns and its Cloudflare provider are pinned exactly. They are the tools
+  # that decide what the zone looks like; a version drifting unnoticed is a
+  # plan changing for reasons nobody chose.
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps"
