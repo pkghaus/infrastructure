@@ -86,6 +86,16 @@ apt:
   type: CNAME
   value: pkghaus.github.io.
 
+# The R2 bucket behind the archive, reachable in its own right. Created by
+# Cloudflare when pkghaus-apt was given a custom domain, and declared here
+# because octodns is the source of truth for this zone - a record it does not
+# know about is removed on the next deploy, which would strand the origin rule
+# that sends pool/ and dists/ at this name.
+objects:
+  octodns: *PROXIED_AND_AUTOTTL
+  type: CNAME
+  value: public.r2.dev.
+
 # Purelymail's DKIM keys. CNAMEs, so key rotation happens on their side
 # without a zone change. Deliberately NOT proxied: a proxied CNAME would
 # answer with Cloudflare addresses and break the DKIM lookup.
