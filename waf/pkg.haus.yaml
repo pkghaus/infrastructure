@@ -4,6 +4,32 @@ cloudflare:
     security_level: medium
     challenge_passage: 1800
     browser_integrity_check: 'on'
+  # Captured from the live zone, not chosen here. Everything below was already
+  # set - AUH and HSTS by hand after the account move, the rest by Cloudflare's
+  # defaults - and this section exists so the next move does not need a human
+  # to remember them. Changing any of these is a separate change with its own
+  # reasoning.
+  zone_tls:
+    ssl: full
+    # Raised from the 1.0 the zone carried. Not a behaviour change: a client
+    # capped at TLS 1.0 or 1.1 is already refused by the edge, so the setting
+    # was describing something Cloudflare does not honour. RFC 8996 deprecates
+    # both, and trixie negotiates 1.3.
+    min_tls_version: '1.2'
+    tls_1_3: 'on'
+    zero_rtt: 'off'
+    always_use_https: 'on'
+    automatic_https_rewrites: 'on'
+    security_header:
+      strict_transport_security:
+        enabled: true
+        max_age: 15552000
+        include_subdomains: true
+        # Deliberately off. Preload is a one-way door: getting a domain off the
+        # browser preload list takes months, and it commits every current and
+        # future subdomain to HTTPS.
+        preload: false
+        nosniff: false
   cache_rules:
   - ref: apt-pool-debs-immutable
     description: Pool .debs are immutable by archive invariant (reprepro
