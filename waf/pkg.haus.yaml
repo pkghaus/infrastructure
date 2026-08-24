@@ -88,25 +88,6 @@ cloudflare:
       enabled: true
     expression: |-
       (http.host eq "apt.pkg.haus")
-  origin_rules:
-  - ref: apt-objects-from-r2
-    description: The archive's objects live in R2, and only the pkghaus-stats
-      Worker could read them. That made the Worker a single point of failure -
-      its routes fail open, and a bypassed request reached a Pages tree that no
-      longer carries these paths. Pointing the origin at the bucket's custom
-      domain means a request that skips the Worker still gets the bytes, and
-      the cache rules apply to a real origin fetch again. Listing pages are
-      excluded - they are Pages-rendered HTML sharing the pool/ path space.
-    expression: |-
-      (http.host eq "apt.pkg.haus")
-      and (starts_with(http.request.uri.path, "/pool/")
-           or starts_with(http.request.uri.path, "/dists/"))
-      and not ends_with(http.request.uri.path, "/")
-      and not ends_with(http.request.uri.path, "/index.html")
-    action_parameters:
-      host_header: objects.pkg.haus
-      origin:
-        host: objects.pkg.haus
   redirect_rules:
   - ref: www-to-apex
     description: www is not a site; send it to the apex, path and query intact.
