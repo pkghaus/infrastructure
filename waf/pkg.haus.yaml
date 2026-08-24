@@ -48,6 +48,23 @@ cloudflare:
         mode: respect_origin
     expression: |-
       (http.host eq "pkg.haus")
+  - ref: apt-stats-respect-origin
+    description: The stats page rebuilds every five minutes and says so. It
+      matched none of the rules above, so a cache hit was served the zone
+      default browser TTL of four hours - readers were told a refresh rate they
+      could not observe. respect_origin honours the max-age the Worker sets;
+      the Worker already caches the page for five minutes itself, so the rule
+      only has to stop the zone default overriding it.
+    action_parameters:
+      cache: true
+      edge_ttl:
+        mode: respect_origin
+      browser_ttl:
+        mode: respect_origin
+    expression: |-
+      (http.host eq "apt.pkg.haus")
+      and ((http.request.uri.path eq "/stats")
+        or (http.request.uri.path eq "/stats.json"))
   - ref: apt-listings-cache
     description: Archive listing pages are human-facing only (APT never reads
       them); cache for a day. The apt publish job purges exactly these URLs
