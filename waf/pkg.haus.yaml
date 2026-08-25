@@ -143,13 +143,15 @@ cloudflare:
         preserve_query_string: true
   response_header_rules:
   - ref: security-headers
-    description: One header set for every response on both hosts. Inert on
-      non-HTML (apt clients ignore unknown headers); matches what the stats
-      worker already sends, and "set" overwrites so nothing duplicates. The
-      CSP ceiling is unsafe-inline because the static pages carry inline
-      styles and the Plausible/copy/time scripts. Hosts are enumerated so
-      a future subdomain opts in deliberately instead of inheriting.
-    expression: http.host in {"pkg.haus" "apt.pkg.haus" "www.pkg.haus"}
+    description: One header set for every response that cannot set its own.
+      Inert on non-HTML. The CSP ceiling is unsafe-inline because the static
+      pages carry inline styles and the Plausible/copy/time scripts. /stats
+      is excluded because the worker serving it sets all three headers itself
+      and names its inline scripts by hash, and "set" would overwrite that
+      with the ceiling. Hosts are enumerated so a new subdomain opts in
+      deliberately.
+    expression: http.host in {"pkg.haus" "www.pkg.haus"} or (http.host eq
+      "apt.pkg.haus" and not starts_with(http.request.uri.path, "/stats"))
     action_parameters:
       headers:
         Content-Security-Policy:
