@@ -91,6 +91,21 @@ cloudflare:
       (http.host eq "apt.pkg.haus")
       and ((http.request.uri.path eq "/stats")
         or (http.request.uri.path eq "/stats.json"))
+  # TEMPORARY probe, removed in the follow-up PR. Answers one question that
+  # cannot be answered from outside: does browser_ttl override_origin reach a
+  # response served by the Workers asset layer, or only an origin fetch?
+  # Scoped to a path the archive does not serve, so it matches nothing real.
+  # 3600 is a value no other rule or default produces, so seeing it is proof.
+  - ref: probe-asset-browser-ttl
+    description: Temporary probe for the static-assets migration. Matches a path
+      the archive does not serve. Removed once the question is answered.
+    expression: (http.host eq "apt.pkg.haus") and (starts_with(http.request.uri.path,
+      "/__probe"))
+    action_parameters:
+      cache: true
+      browser_ttl:
+        mode: override_origin
+        default: 3600
   - ref: apt-listings-cache
     description: Archive listing pages are human-facing only (APT never reads
       them); cache for a day. The apt publish job purges exactly these URLs
