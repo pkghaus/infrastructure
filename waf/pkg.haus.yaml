@@ -91,30 +91,6 @@ cloudflare:
       (http.host eq "apt.pkg.haus")
       and ((http.request.uri.path eq "/stats")
         or (http.request.uri.path eq "/stats.json"))
-  - ref: apt-listings-cache
-    description: Archive listing pages are human-facing only (APT never reads
-      them); cache for a day. The apt publish job purges exactly these URLs
-      after every Pages deployment (scripts/purge-cache.sh in pkghaus/apt),
-      so a fresh render is visible in seconds. dists/ is excluded so metadata
-      freshness stays governed by a single rule; 4xx/5xx pinned to no-store.
-    action_parameters:
-      cache: true
-      edge_ttl:
-        mode: override_origin
-        default: 86400
-        status_code_ttl:
-        - status_code_range:
-            from: 400
-            to: 599
-          value: -1
-      browser_ttl:
-        mode: respect_origin
-    expression: |-
-      (http.host eq "apt.pkg.haus")
-      and ((ends_with(http.request.uri.path, "/"))
-        or (ends_with(http.request.uri.path, "/index.html")))
-      and (not starts_with(http.request.uri.path, "/dists/"))
-
   waf_custom_rules:
   - ref: apt-never-challenge
     description: APT is not a browser - any challenge breaks every apt update
