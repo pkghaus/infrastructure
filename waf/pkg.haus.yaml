@@ -62,18 +62,6 @@ cloudflare:
       (http.host eq "apt.pkg.haus")
       and ((starts_with(http.request.uri.path, "/dists/"))
         or (http.request.uri.path eq "/pkghaus-archive-keyring.gpg"))
-  - ref: site-html-cache-respect-origin
-    description: pkg.haus is a static page; make its HTML cache-eligible for
-      the 600 s GitHub Pages itself declares. A deploy is stale for at most
-      the same 10 minutes browsers already tolerate today.
-    action_parameters:
-      cache: true
-      edge_ttl:
-        mode: respect_origin
-      browser_ttl:
-        mode: respect_origin
-    expression: |-
-      (http.host eq "pkg.haus")
   - ref: apt-stats-respect-origin
     description: The stats page rebuilds every five minutes and says so. It
       matched none of the rules above, so a cache hit was served the zone
