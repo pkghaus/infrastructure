@@ -61,30 +61,36 @@
     - flags: 0
       tag: issuewild
       value: ssl.com
-  # The apex website: GitHub Pages behind the Cloudflare proxy.
+  # The apex website. Served entirely by the pkghaus-website Worker on the
+  # pkg.haus/* route: static assets, no script, and it answers its own 404s, so
+  # no request reaches an origin.
+  #
+  # 100:: is the IPv6 discard prefix (RFC 6666) and is Cloudflare's own
+  # convention for a hostname a Worker answers: attaching a Worker custom
+  # domain creates exactly this record. Declaring it here instead means octodns
+  # still owns every record in the zone, rather than ignoring one Cloudflare
+  # created behind its back. Proxied is what makes the record work at all: the
+  # edge terminates the request and the route runs, and the address is never
+  # connected to.
+  #
+  # It used to be GitHub Pages A/AAAA. Pages served nothing by the end.
   - octodns: &PROXIED_AND_AUTOTTL
       cloudflare:
         proxied: true
         auto-ttl: true
-    type: A
-    values:
-      - 185.199.108.153
-      - 185.199.109.153
-      - 185.199.110.153
-      - 185.199.111.153
-  - octodns: *PROXIED_AND_AUTOTTL
     type: AAAA
-    values:
-      - 2606:50c0:8000::153
-      - 2606:50c0:8001::153
-      - 2606:50c0:8002::153
-      - 2606:50c0:8003::153
+    value: '100::'
 
 # The APT archive: GitHub Pages behind the Cloudflare proxy.
+# The archive, same shape as the apex: the pkghaus-archive Worker owns
+# apt.pkg.haus/*, serving the listing tree as static assets and pool objects
+# and indices from R2, and answering misses from the archive's own 404.html.
+# Nothing reaches an origin, so there is no origin to name. It was a CNAME to
+# pkghaus.github.io.
 apt:
   octodns: *PROXIED_AND_AUTOTTL
-  type: CNAME
-  value: pkghaus.github.io.
+  type: AAAA
+  value: '100::'
 
 # Purelymail's DKIM keys. CNAMEs, so key rotation happens on their side
 # without a zone change. Deliberately NOT proxied: a proxied CNAME would
