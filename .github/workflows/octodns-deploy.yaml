@@ -8,6 +8,9 @@ on:
       - '.github/**'
       - README.md
 
+permissions:
+  contents: read
+
 env:
   CLOUDFLARE_API_TOKEN: ${{ secrets.PKGHAUS_INFRASTRUCTURE_CLOUDFLARE_API_TOKEN }}
 
@@ -21,7 +24,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v7
         with:
-          python-version: '3.10'
+          python-version: '3.13'
           cache: 'pip'
       - run: pip install -r requirements.txt
       - name: Publish to providers
