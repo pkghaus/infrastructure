@@ -50,7 +50,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v7
         with:
-          python-version: '3.10'
+          python-version: '3.13'
           cache: 'pip'
       - run: pip install -r requirements.txt
       - uses: solvaholic/octodns-sync@96ac518c8510c4070e8d65d299346fb03d2fd446  # v3.1.1
