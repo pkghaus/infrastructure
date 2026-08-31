@@ -92,6 +92,21 @@ apt:
   type: AAAA
   value: '100::'
 
+# The .buildinfo pool. Its own Worker, reading the same R2 bucket under the
+# buildinfos/ prefix, so the Worker that serves `apt update` keeps its blast
+# radius. Its own host rather than a path under apt, because
+# buildinfo-pool/<initial>/<source>/ is Debian's source-pool layout, which apt
+# never fetches and no Release file references: under apt.pkg.haus it read as an
+# archive path while not being one. Debian separates it the same way, at
+# buildinfos.debian.net, whose plural this follows: the host serves a pool of
+# many records, not one.
+#
+# Same shape as apt above, and for the same reason: no origin exists behind it.
+buildinfos:
+  octodns: *PROXIED_AND_AUTOTTL
+  type: AAAA
+  value: '100::'
+
 # Purelymail's DKIM keys. CNAMEs, so key rotation happens on their side
 # without a zone change. Deliberately NOT proxied: a proxied CNAME would
 # answer with Cloudflare addresses and break the DKIM lookup.
