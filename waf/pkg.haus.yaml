@@ -79,6 +79,29 @@ cloudflare:
       (http.host eq "apt.pkg.haus")
       and ((http.request.uri.path eq "/stats")
         or (http.request.uri.path eq "/stats.json"))
+  - ref: buildinfos-records-immutable
+    description: A build record never changes - a version, once built, is never
+      rebuilt - so cache it hard. browser_ttl respect_origin is the clause that
+      earns this rule; the zone default of 14400 would otherwise cut the
+      worker's 30-day immutable header to four hours. Scoped to files, since a
+      path ending in / is a listing with its own five-minute TTL. 4xx/5xx
+      pinned to no-store so a transient error is not cached across POPs.
+    action_parameters:
+      cache: true
+      edge_ttl:
+        mode: override_origin
+        default: 2592000
+        status_code_ttl:
+        - status_code_range:
+            from: 400
+            to: 599
+          value: -1
+      browser_ttl:
+        mode: respect_origin
+    expression: |-
+      (http.host eq "buildinfos.pkg.haus")
+      and (starts_with(http.request.uri.path, "/buildinfo-pool/"))
+      and (not ends_with(http.request.uri.path, "/"))
   waf_custom_rules:
   - ref: apt-never-challenge
     description: APT is not a browser - any challenge breaks every apt update
@@ -95,6 +118,22 @@ cloudflare:
       enabled: true
     expression: |-
       (http.host eq "apt.pkg.haus")
+  - ref: buildinfos-never-challenge
+    description: The build records are fetched by curl, not only by browsers -
+      the published rebuild instructions start with `curl -fsSLO`, and
+      debrebuild fetches the .dsc and tarballs the same way. A challenge breaks
+      those silently, exactly as it would break apt above.
+    action: skip
+    action_parameters:
+      products:
+      - securityLevel
+      - bic
+      - hot
+      - uaBlock
+    logging:
+      enabled: true
+    expression: |-
+      (http.host eq "buildinfos.pkg.haus")
   redirect_rules:
   - ref: www-to-apex
     description: www is not a site; send it to the apex, path and query intact.
