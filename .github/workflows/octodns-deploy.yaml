@@ -7,9 +7,25 @@ on:
     paths-ignore:
       - '.github/**'
       - README.md
+      # CI-only, and this list is an ignore-list rather than an allow-list, so
+      # anything not named here deploys. Without this line adding a test script
+      # fires a live DNS apply -- a no-op one, since dns/ is unchanged, but an
+      # unrequested production deploy all the same. (octorules-deploy.yaml uses
+      # an allow-list on waf/** and needs no equivalent.)
+      - 'tests/**'
 
 permissions:
   contents: read
+
+# One writer to the zone at a time. octodns treats state absent from the repo as
+# a deletion, so two applies interleaving can converge on a zone neither commit
+# described. Never cancel-in-progress: a half-applied zone is the worst outcome,
+# and superseding a queued run is right, since the newest master is what we want
+# to converge to. Separate from the rules group -- DNS and WAF are independent
+# surfaces at Cloudflare and do not contend.
+concurrency:
+  group: octodns-deploy
+  cancel-in-progress: false
 
 env:
   CLOUDFLARE_API_TOKEN: ${{ secrets.PKGHAUS_INFRASTRUCTURE_CLOUDFLARE_API_TOKEN }}
@@ -18,6 +34,10 @@ jobs:
   deploy:
     name: Publish DNS config
     runs-on: ubuntu-latest
+    # Ten minutes against a slowest-observed 29s. Generous enough never to fire
+    # on a healthy run, and 36x better than the 360-minute default holding a
+    # runner with a live Cloudflare token in its environment.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
         with:
