@@ -20,6 +20,7 @@ jobs:
   changes:
     name: Detect dns/ changes
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       dns: ${{ steps.filter.outputs.dns }}
     steps:
@@ -42,6 +43,7 @@ jobs:
     needs: [changes]
     if: needs.changes.outputs.dns == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       plan: ${{ steps.generate-plan.outputs.plan }}
     steps:
@@ -63,6 +65,7 @@ jobs:
     needs: [changes, octodns-sync]
     if: needs.changes.outputs.dns == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Find previous comment, if present
         uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad  # v4.0.0

@@ -12,6 +12,12 @@ on:
 permissions:
   contents: read
 
+# One writer to the rules at a time; see octodns-deploy.yaml for the reasoning.
+# A separate group from DNS, because the two surfaces do not contend.
+concurrency:
+  group: octorules-deploy
+  cancel-in-progress: false
+
 env:
   CLOUDFLARE_API_TOKEN: ${{ secrets.PKGHAUS_INFRASTRUCTURE_CLOUDFLARE_API_TOKEN }}
 
@@ -19,6 +25,7 @@ jobs:
   deploy:
     name: Publish Rules config
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
         with:
