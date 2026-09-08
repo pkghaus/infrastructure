@@ -1,7 +1,8 @@
 # infrastructure
 
-Infrastructure-as-code for pkg.haus. Everything about the zone lives here;
-nothing is changed by hand in the Cloudflare dashboard or via ad-hoc API calls.
+Infrastructure-as-code for pkg.haus. Records and rules live here, and nothing
+in that scope is changed by hand in the Cloudflare dashboard or via ad-hoc API
+calls.
 
 | Concern | Tool | Config | State |
 | --- | --- | --- | --- |
@@ -11,6 +12,15 @@ nothing is changed by hand in the Cloudflare dashboard or via ad-hoc API calls.
 Both tools own their scope completely: a record or rule absent from this
 repository is removed on deploy. Pull requests get a plan posted as a comment;
 merges to `master` deploy.
+
+### What is not here
+
+The zone is not restorable from this repository alone. Neither tool covers
+zone-level DNSSEC, so the DS and DNSKEY state is dashboard-managed and invisible
+to a plan. A Worker route's request-limit failure mode is set on the route
+object through the API and has no field in `wrangler.toml`. Mail routing lives
+with the mail provider. Changing any of those is still a deliberate act, but it
+is not one this repository can see, review or replay.
 
 ## License
 
