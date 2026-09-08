@@ -72,8 +72,6 @@
   # created behind its back. Proxied is what makes the record work at all: the
   # edge terminates the request and the route runs, and the address is never
   # connected to.
-  #
-  # It used to be GitHub Pages A/AAAA. Pages served nothing by the end.
   - octodns: &PROXIED_AND_AUTOTTL
       cloudflare:
         proxied: true
