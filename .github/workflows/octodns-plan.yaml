@@ -19,7 +19,7 @@ permissions:
 jobs:
   changes:
     name: Detect dns/ changes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       dns: ${{ steps.filter.outputs.dns }}
@@ -42,7 +42,7 @@ jobs:
     name: Run octodns-sync plan
     needs: [changes]
     if: needs.changes.outputs.dns == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
       plan: ${{ steps.generate-plan.outputs.plan }}
@@ -64,7 +64,7 @@ jobs:
     name: Add plan output to PR comment
     needs: [changes, octodns-sync]
     if: needs.changes.outputs.dns == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Find previous comment, if present

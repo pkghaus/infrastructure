@@ -37,12 +37,12 @@ jobs:
             rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
             -color
 
-      # actionlint above covers .github/ only. These two files decide what the
-      # live zone looks like and nothing parsed them until now. PyYAML takes
-      # the last of a duplicated key and says nothing, and both tools treat
-      # state absent from the repo as a deletion -- so a key swallowed by its
-      # twin is a record removed from Cloudflare on the next deploy. Since
-      # DNSSEC went live that is a SERVFAIL rather than a wrong answer.
+      # actionlint above covers .github/ only, and these two files decide what
+      # the live zone looks like. PyYAML takes the last of a duplicated key and
+      # says nothing, and both tools treat state absent from the repo as a
+      # deletion, so a key swallowed by its twin is a record removed from
+      # Cloudflare on the next deploy. With DNSSEC live that is a SERVFAIL
+      # rather than a wrong answer.
       #
       # System python3, no setup-python and no pip install: PyYAML is present
       # on the runner image, which is how pkghaus/buildinfos has run the same
@@ -74,11 +74,11 @@ jobs:
       # The token is deliberately fake and must stay that way. octodns builds
       # its Manager -- providers included -- before it validates anything, and
       # the env-secret handler refuses to construct the Cloudflare provider
-      # without the variable set. It never makes a request in validate mode;
-      # verified 2026-09-04 by running it offline against this config, and by
-      # confirming it exits 1 and names the value when a record is made
-      # invalid. Using the real secret here would buy nothing and would stop
-      # this job running on a fork's pull request.
+      # without the variable set. It never makes a request in validate mode:
+      # verified by running it offline against this config, and by confirming it
+      # exits 1 and names the value when a record is made invalid. The real
+      # secret would buy nothing and would stop this job running on a fork's
+      # pull request.
       - name: Validate the DNS records
         env:
           CLOUDFLARE_API_TOKEN: not-a-real-token-octodns-validate-makes-no-requests
