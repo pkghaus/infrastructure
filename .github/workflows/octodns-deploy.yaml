@@ -33,7 +33,7 @@ env:
 jobs:
   deploy:
     name: Publish DNS config
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Ten minutes against a slowest-observed 29s. Generous enough never to fire
     # on a healthy run, and 36x better than the 360-minute default holding a
     # runner with a live Cloudflare token in its environment.
