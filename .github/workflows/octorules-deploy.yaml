@@ -36,7 +36,7 @@ jobs:
           cache: 'pip'
       - run: pip install -r requirements.txt
       - name: Publish to providers
-        uses: doctena-org/octorules-sync@a278ab9ed29451d7560c9caa9b26d0bf9f8cb9e9  # v1.8.6
+        uses: doctena-org/octorules-sync@803b3a5a97c77c8de108b5ecfad259810164143e  # v1.8.7
         with:
           config_path: octorules.yaml
           doit: --doit
