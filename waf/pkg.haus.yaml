@@ -107,17 +107,12 @@ cloudflare:
       and (starts_with(http.request.uri.path, "/buildinfo-pool/"))
       and (not ends_with(http.request.uri.path, "/"))
   - ref: buildinfos-respect-origin
-    description: Everything on this host that is NOT an immutable record - the
-      listing pages, buildinfo-pool.list, the favicon, the 404. Each carries a
-      cache-control the worker chose, and on a cache HIT the zone default
-      browser TTL of four hours replaced it; measured 2026-09-21, the root
-      served max-age=14400 on every HIT against the worker's 300. The rule
-      above says a listing has "its own five-minute TTL", which was true of
-      what the worker sent and not of what a reader received.
+    description: Everything here that is not an immutable record - listings,
+      buildinfo-pool.list, the favicon, the 404. On a cache HIT the zone
+      default browser TTL of four hours replaced whatever the worker set;
+      measured 2026-09-21, the root served max-age=14400 against its own 300.
       The expression is the exact complement of the rule above, so no request
-      can match both and their order cannot matter. That is deliberate -
-      Cloudflare cache-rule precedence is not something to assume on the host
-      serving build records.
+      matches both and their order cannot matter.
     action_parameters:
       cache: true
       edge_ttl:
