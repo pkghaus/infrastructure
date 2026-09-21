@@ -105,6 +105,19 @@ buildinfos:
   type: AAAA
   value: '100::'
 
+# The reproducibility verdicts: whether each published package rebuilds
+# byte-for-byte from its own build record. Its own Worker over its own R2
+# bucket, deliberately NOT the archive's -- a verifier that can write to what
+# it verifies is making a weaker claim than one that cannot, and separate
+# buckets are the only thing enforcing that.
+#
+# Same shape as apt and buildinfos above, and for the same reason: no origin
+# exists behind it.
+reproducible:
+  octodns: *PROXIED_AND_AUTOTTL
+  type: AAAA
+  value: '100::'
+
 # Purelymail's DKIM keys. CNAMEs, so key rotation happens on their side
 # without a zone change. Deliberately NOT proxied: a proxied CNAME would
 # answer with Cloudflare addresses and break the DKIM lookup.
