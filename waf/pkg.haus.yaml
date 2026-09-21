@@ -106,6 +106,39 @@ cloudflare:
       (http.host eq "buildinfos.pkg.haus")
       and (starts_with(http.request.uri.path, "/buildinfo-pool/"))
       and (not ends_with(http.request.uri.path, "/"))
+  - ref: buildinfos-respect-origin
+    description: Everything here that is not an immutable record - listings,
+      buildinfo-pool.list, the favicon, the 404. On a cache HIT the zone
+      default browser TTL of four hours replaced whatever the worker set;
+      measured 2026-09-21, the root served max-age=14400 against its own 300.
+      The expression is the exact complement of the rule above, so no request
+      matches both and their order cannot matter.
+    action_parameters:
+      cache: true
+      edge_ttl:
+        mode: respect_origin
+      browser_ttl:
+        mode: respect_origin
+    expression: |-
+      (http.host eq "buildinfos.pkg.haus")
+      and not (starts_with(http.request.uri.path, "/buildinfo-pool/")
+        and not ends_with(http.request.uri.path, "/"))
+  - ref: reproducible-respect-origin
+    description: Every page and every verdict on this host is rendered per
+      request and carries the worker's own five-minute max-age. With no rule
+      the zone default browser TTL of four hours applied instead, so a reader
+      watching a verification land was told a refresh rate they could not
+      observe - measured at launch, 2026-09-21, the same defect apt-stats had
+      and for the same reason. Host-wide rather than per path because nothing
+      here is immutable - a verdict is the current answer, not an artifact.
+    action_parameters:
+      cache: true
+      edge_ttl:
+        mode: respect_origin
+      browser_ttl:
+        mode: respect_origin
+    expression: |-
+      (http.host eq "reproducible.pkg.haus")
   waf_custom_rules:
   - ref: apt-never-challenge
     description: APT is not a browser - any challenge breaks every apt update
@@ -138,6 +171,23 @@ cloudflare:
       enabled: true
     expression: |-
       (http.host eq "buildinfos.pkg.haus")
+  - ref: reproducible-never-challenge
+    description: The verdicts are machine-readable on purpose and the README
+      tells people to fetch them - /inventory.json and
+      /verify/<suite>/<arch>/<package>.json are curl targets, not browser
+      pages. A challenge breaks those silently, exactly as it would break apt
+      and the build records above.
+    action: skip
+    action_parameters:
+      products:
+      - securityLevel
+      - bic
+      - hot
+      - uaBlock
+    logging:
+      enabled: true
+    expression: |-
+      (http.host eq "reproducible.pkg.haus")
   redirect_rules:
   - ref: www-to-apex
     description: www is not a site; send it to the apex, path and query intact.
