@@ -146,6 +146,14 @@ _dmarc:
   type: CNAME
   value: dmarcroot.purelymail.com.
 
+# GitHub's domain verification for the pkghaus organization, which is what puts
+# the Verified badge on github.com/pkghaus. GitHub allows deleting it once
+# verified; removing it here would remove it from the zone.
+_gh-pkghaus-o:
+  octodns: *AUTOTTL_ONLY
+  type: TXT
+  value: b27985af56
+
 # www redirects to the apex (redirect rule in waf/pkg.haus.yaml); the record
 # only exists so the proxy can answer for the hostname.
 www:
