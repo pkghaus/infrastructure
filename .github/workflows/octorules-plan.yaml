@@ -14,9 +14,6 @@ permissions:
   contents: read
   pull-requests: write  # add_pr_comment posts the plan diff
 
-env:
-  CLOUDFLARE_API_TOKEN: ${{ secrets.PKGHAUS_INFRASTRUCTURE_CLOUDFLARE_API_TOKEN }}
-
 jobs:
   octorules-plan:
     name: Run octorules plan
@@ -53,6 +50,8 @@ jobs:
 
       - uses: doctena-org/octorules-sync@803b3a5a97c77c8de108b5ecfad259810164143e  # v1.8.7
         if: steps.filter.outputs.rules == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PKGHAUS_INFRASTRUCTURE_CLOUDFLARE_API_TOKEN }}
         with:
           config_path: octorules.yaml
           force: 'Yes'

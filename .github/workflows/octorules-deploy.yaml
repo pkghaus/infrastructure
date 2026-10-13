@@ -18,9 +18,6 @@ concurrency:
   group: octorules-deploy
   cancel-in-progress: false
 
-env:
-  CLOUDFLARE_API_TOKEN: ${{ secrets.PKGHAUS_INFRASTRUCTURE_CLOUDFLARE_API_TOKEN }}
-
 jobs:
   deploy:
     name: Publish Rules config
@@ -37,6 +34,8 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Publish to providers
         uses: doctena-org/octorules-sync@803b3a5a97c77c8de108b5ecfad259810164143e  # v1.8.7
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PKGHAUS_INFRASTRUCTURE_CLOUDFLARE_API_TOKEN }}
         with:
           config_path: octorules.yaml
           doit: --doit
