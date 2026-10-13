@@ -7,7 +7,6 @@ on:
     paths:
       - 'waf/**'
       - '!waf/README.md'
-      - '!rules/docs/**'
 
 permissions:
   contents: read

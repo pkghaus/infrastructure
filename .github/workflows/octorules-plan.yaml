@@ -3,7 +3,7 @@ name: Plan Rules changes
 
 # Runs on every PR (no `paths:` filter on the trigger) so the required check
 # "Run octorules plan" always reports a status. dorny/paths-filter inside the
-# job decides whether any rules/ files changed; the heavy steps are gated on
+# job decides whether any waf/ files changed; the heavy steps are gated on
 # that, so DNS-only PRs complete as a no-op success instead of being blocked.
 
 on:
@@ -38,9 +38,9 @@ jobs:
               - 'waf/**'
               - '!waf/README.md'
 
-      - name: No-op when no rules/ changes
+      - name: No-op when no waf/ changes
         if: steps.filter.outputs.rules != 'true'
-        run: echo "No rules/ changes — required check satisfied as no-op."
+        run: echo "No waf/ changes - required check satisfied as no-op."
 
       - uses: actions/setup-python@v7
         if: steps.filter.outputs.rules == 'true'
