@@ -27,9 +27,6 @@ concurrency:
   group: octodns-deploy
   cancel-in-progress: false
 
-env:
-  CLOUDFLARE_API_TOKEN: ${{ secrets.PKGHAUS_INFRASTRUCTURE_CLOUDFLARE_API_TOKEN }}
-
 jobs:
   deploy:
     name: Publish DNS config
@@ -49,6 +46,8 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Publish to providers
         uses: solvaholic/octodns-sync@96ac518c8510c4070e8d65d299346fb03d2fd446  # v3.1.1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PKGHAUS_INFRASTRUCTURE_CLOUDFLARE_API_TOKEN }}
         with:
           config_path: octodns.yaml
           doit: --doit
